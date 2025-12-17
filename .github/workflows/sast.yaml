@@ -1,15 +1,15 @@
 name: "Security Pipeline"
- 
+
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
- 
+
 permissions:
   security-events: write
   contents: read
- 
+
 jobs:
   # JOB 1 : Analyse SAST avec Semgrep
   sast-semgrep:
@@ -20,6 +20,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Run Semgrep
         run: |
           semgrep scan \
@@ -27,8 +28,21 @@ jobs:
             --config "p/flask" \
             --config "p/security-audit" \
             --sarif --output semgrep.sarif
+
       - name: Upload Semgrep results
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: semgrep.sarif
         if: always()
+
+  # JOB 2 : Rapport final
+  reporting:
+    name: Final Report
+    needs: [sast-semgrep] # ajouter sca-snyk si tu as un job SCA Snyk
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summary
+        run: |
+          echo "### 🚀 Résumé Sécurité" >> $GITHUB_STEP_SUMMARY
+          echo "Scans terminés. Les résultats sont dans l'onglet Security." >> $GITHUB_STEP_SUMMARY
