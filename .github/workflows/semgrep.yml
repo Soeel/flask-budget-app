@@ -1,14 +1,10 @@
-name: Scan Python code and dependencies, upload SARIF
+name: Security Scan (Snyk + Semgrep)
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
   workflow_dispatch:
 
 jobs:
@@ -23,21 +19,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      # --------------------------
-      # Snyk Scan (requirements.txt)
-      # --------------------------
+      # --------------------
+      # SNYK (SCA)
+      # --------------------
       - name: Run Snyk on requirements.txt
         uses: snyk/actions/python@master
         env:
           SNYK_TOKEN: ${{ secrets.TOKEN_SNYK }}
         with:
           command: test
-          args: --file=requirements.txt --sarif-file-output=results.sarif
+          args: --file=requirements.txt --sarif-file-output=snyk.sarif
         continue-on-error: true
 
-      # --------------------------
-      # Semgrep Scan (Python + Flask)
-      # --------------------------
+      - name: Upload Snyk SARIF
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: snyk.sarif
+          category: snyk-python-sca
+
+      # --------------------
+      # SEMGREP (SAST)
+      # --------------------
       - name: Run Semgrep
         uses: semgrep/semgrep-action@v1
         with:
@@ -45,14 +47,13 @@ jobs:
             p/python
             p/flask
             p/security-audit
-          sarif-output: results.sarif   # Utilise le même fichier SARIF
+          args: >
+            --sarif
+            --output=semgrep.sarif
         continue-on-error: true
 
-      # --------------------------
-      # Upload SARIF
-      # --------------------------
-      - name: Upload SARIF file
+      - name: Upload Semgrep SARIF
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: results.sarif
-          category: security
+          sarif_file: semgrep.sarif
+          category: semgrep
