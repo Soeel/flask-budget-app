@@ -2,13 +2,9 @@ name: Security Scan - SCA (Python / Snyk)
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [ "main", "develop" ]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ "main", "develop" ]
   workflow_dispatch:
 
 jobs:
@@ -29,7 +25,8 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
 
       - name: Run Snyk SCA (requirements.txt)
         uses: snyk/actions/python@v3
