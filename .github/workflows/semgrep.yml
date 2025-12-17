@@ -8,6 +8,10 @@ on:
     branches:
       - main
 
+permissions:
+  security-events: write
+  contents: read
+
 jobs:
   semgrep:
     name: SAST - Semgrep
@@ -24,9 +28,11 @@ jobs:
             p/python
             p/flask
             p/security-audit
+          sarif-output: semgrep.sarif
         continue-on-error: true
 
       - name: Upload SARIF file
+        if: github.repository == github.event.repository.full_name  # ignore forks
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep.sarif
