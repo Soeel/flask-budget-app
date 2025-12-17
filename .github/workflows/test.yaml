@@ -25,4 +25,4 @@ jobs:
           SNYK_TOKEN: ${{ secrets.TOKEN_SNYK }}
         with:
           command: test
-          args: --file=requirements.txt --sarif-file-output=snyk.sarif
+          args: --file=requirements.txt --sarif-file-output=./snyk.sarif
