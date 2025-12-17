@@ -33,7 +33,7 @@ jobs:
       # 4️⃣ Lancer l'analyse Semgrep et générer le SARIF
       - name: Run Semgrep scan
         run: |
-          python -m semgrep --config p/python --config p/flask --config p/security-audit --sarif > semgrep-results.sarif
+          semgrep --config p/python --config p/flask --config p/security-audit --sarif > semgrep-results.sarif
         continue-on-error: true
 
       # 5️⃣ Publier le résultat SARIF sur GitHub
