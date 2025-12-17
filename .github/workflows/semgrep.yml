@@ -1,4 +1,4 @@
-name: Scan Python code with Semgrep and upload SARIF
+name: Scan Python code and dependencies, upload SARIF
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  semgrep:
+  security-scan:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -23,20 +23,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      # --------------------------
+      # Snyk Scan (requirements.txt)
+      # --------------------------
+      - name: Run Snyk on requirements.txt
+        uses: snyk/actions/python@master
+        env:
+          SNYK_TOKEN: ${{ secrets.TOKEN_SNYK }}
+        with:
+          command: test
+          args: --file=requirements.txt --sarif-file-output=results.sarif
+        continue-on-error: true
+
+      # --------------------------
+      # Semgrep Scan (Python + Flask)
+      # --------------------------
       - name: Run Semgrep
         uses: semgrep/semgrep-action@v1
         with:
-          # Analyses avec plusieurs configs Semgrep
           config: |
             p/python
             p/flask
             p/security-audit
-          # Génération du fichier SARIF comme pour Snyk
-          sarif-output: results.sarif
+          sarif-output: results.sarif   # Utilise le même fichier SARIF
         continue-on-error: true
 
+      # --------------------------
+      # Upload SARIF
+      # --------------------------
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif
-          category: semgrep
+          category: security
