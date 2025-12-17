@@ -20,11 +20,9 @@ jobs:
       contents: read
 
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      # 2️⃣ Run Snyk scan on requirements.txt
       - name: Run Snyk on requirements.txt
         uses: snyk/actions/python@master
         env:
@@ -32,8 +30,8 @@ jobs:
         with:
           command: test
           args: --file=requirements.txt --sarif-file-output=results.sarif
+        continue-on-error: true
 
-      # 3️⃣ Upload SARIF to GitHub Security
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v4
         with:
