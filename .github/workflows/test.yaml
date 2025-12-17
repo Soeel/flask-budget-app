@@ -1,4 +1,4 @@
-name: Scan requirements.txt with Snyk
+name: Scan requirements.txt and upload SARIF
 
 on:
   push:
@@ -12,17 +12,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  security:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # 1️⃣ Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
+      # 2️⃣ Run Snyk scan on requirements.txt
       - name: Run Snyk on requirements.txt
         uses: snyk/actions/python@master
         env:
           SNYK_TOKEN: ${{ secrets.TOKEN_SNYK }}
         with:
           command: test
-          args: --file=requirements.txt --sarif-file-output=./snyk.sarif
+          args: --file=requirements.txt --sarif-file-output=results.sarif
+
+      # 3️⃣ Upload SARIF to GitHub Security
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif
+          category: snyk-python-sca
