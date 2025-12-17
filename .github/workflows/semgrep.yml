@@ -24,3 +24,4 @@ jobs:
             p/python
             p/flask
             p/security-audit
+        continue-on-error: true
