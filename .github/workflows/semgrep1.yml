@@ -7,19 +7,21 @@ on:
   pull_request:
     branches: 
       - main
+  workflow_dispatch:
 
 jobs:
-  build:
+  semgrep:
+    name: Run Semgrep
     runs-on: ubuntu-latest
     permissions:
-      security-events: write
+      security-events: write   # nécessaire pour uploader le SARIF
       actions: read
       contents: read
 
     steps:
       # 1️⃣ Récupérer le code
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       # 2️⃣ Installer Python
       - name: Set up Python
