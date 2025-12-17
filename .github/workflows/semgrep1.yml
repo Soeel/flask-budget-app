@@ -9,32 +9,31 @@ on:
       - main
 
 jobs:
-  semgrep:
-    name: Run Semgrep
+  build:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write   # autorise l’upload SARIF
+      security-events: write
+      actions: read
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Set up Python
+      - name: SemGrep
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-
-      - name: Install Semgrep
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install semgrep
-
-      - name: Run Semgrep scan
-        run: |
-          semgrep --config p/python --config p/flask --config p/security-audit --sarif --output semgrep-results.sarif
-        continue-on-error: true
+        python -m pip install --upgrade pip
+        python -m pip install semgrep
+        semgrep --config p/python --config p/flask --config p/security-audit --sarif --output semgrep-results.sarif
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep-results.sarif
 
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep-results.sarif
+
+
